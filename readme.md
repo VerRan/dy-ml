@@ -234,3 +234,37 @@ TN = 201,预测正确 不存在高低肩问题，实际也是不存在高低肩�
 ### 代码运行方法
 1. 进入AWS Sagemaker控制台 开启笔记本实例
 2. 导入 high-low-shoudler-xgboost.ipynb 导入到笔记本实例
+
+
+## 备注
+OpenPose人体关键点识别参数参考：
+通过openpose识别出的参数信息通过数字来表示人体的不同关键点，同时包含了对应的坐标信息。
+// Result for BODY_25 (25 body parts consisting of COCO + foot)
+// const std::map<unsigned int, std::string> POSE_BODY_25_BODY_PARTS {
+//     {0,  "Nose"},
+//     {1,  "Neck"},
+//     {2,  "RShoulder"},
+//     {3,  "RElbow"},
+//     {4,  "RWrist"},
+//     {5,  "LShoulder"},
+//     {6,  "LElbow"},
+//     {7,  "LWrist"},
+//     {8,  "MidHip"},
+//     {9,  "RHip"},
+//     {10, "RKnee"},
+//     {11, "RAnkle"},
+//     {12, "LHip"},
+//     {13, "LKnee"},
+//     {14, "LAnkle"},
+//     {15, "REye"},
+//     {16, "LEye"},
+//     {17, "REar"},
+//     {18, "LEar"},
+//     {19, "LBigToe"},
+//     {20, "LSmallToe"},
+//     {21, "LHeel"},
+//     {22, "RBigToe"},
+//     {23, "RSmallToe"},
+//     {24, "RHeel"},
+//     {25, "Background"}
+// };
