@@ -42,18 +42,18 @@
 程序可以根据客户提供的exel中的标注数据对样本进行分类到不同文件夹，将本地的图片根据客户标注的数据进行分类，分为normal 和 abnormal 文件夹便于后续处理。
 
 * 上传数据到S3
-'''
+```
 上传本地原始数据到S3: aws s3 cp normal/ s3://data-lake-mb3/dy/second_week/normal —recursive
 windowsserver 服务器下载标注后的数据 
 aws s3 s3://data-lake-mb3/dy/second_week . --recursive
-'''
+```
 #### 关键点识别
-'''
+```
 1. Ec2 windows server openpose目录下执行如下命令：
 .\bin\OpenPoseDemo.exe --image_dir .\examples\dy\abnormal\ --write_json output/dy/ --write_images output_images/abnormal/ --display 0
 2. Ec2 windows server 上传输出信息到S3：
 aws s3 cp .\normal\ s3://data-lake-mb3/dy/first_week/key_points/normal/ —recursive
-
+```
 ### 数据质量的提升
 由于数据质量的影响，模型效果很不稳定，经过对数据进行一定的预处理后模型效果趋于稳定主要从以下几个方面对数据质量进行提升。
 1. 多人情况下，筛选关键人
@@ -66,8 +66,7 @@ aws s3 cp .\normal\ s3://data-lake-mb3/dy/first_week/key_points/normal/ —recur
 ## 通过Sagemaker实现体态识别
 ### 数据准备-数据分析
 上面提到了关于数据准备阶段的思路以及注意点，针对数据准备阶段有多种方法可以选择，比如Python，Spark，等其他工具，下面我们将使用Sagemaker DataWrangeler 实现数据的分析与处理。Sagemaker DataWrangler的具体介绍参见：https://www.amazonaws.cn/sagemaker/data-wrangler/
-* 记载数据处理流程文件
-'''
+```
 # Load .flow file
 with open(flow_file_name) as f:
     flow = json.load(f)
@@ -76,11 +75,10 @@ with open(flow_file_name) as f:
 s3_client = boto3.client("s3")
 s3_client.upload_file(flow_file_name, bucket, f"{prefix}/{flow_name}.flow")
 
-print(f"Data Wrangler Flow uploaded to {flow_uri}")
-'''
+```
 
 * 创建数据处理流程
-'''
+```
 import time
 
 from sagemaker.workflow.parameters import (
@@ -111,10 +109,10 @@ pipeline = Pipeline(
     parameters=[instance_type, instance_count],
     steps=[step_process],
     sagemaker_session=sagemaker_session
-'''
+```
 
 * 运行处理流程
-'''
+```
 from botocore.exceptions import ClientError, ValidationError
 
 
@@ -130,14 +128,14 @@ except ClientError as e:
 
 pipeline_arn = response["PipelineArn"]
 print(pipeline_arn)
-'''
+```
 
 
 从上面流程可以看到通过Sagemaker DataWrangler可以通过界面操作，以及强大的自动生成代码能力可以快速构建自己的可运行的数据处理流程，从而大大降低数据处理和数据处理流程构建的过程，同时为后续模型训练以及与模型训练集成做好准备。
 
 ### 模型训练
 #### 定义算法&超参数&训练数据
-'''
+```
 region = boto3.Session().region_name
 container = sagemaker.image_uris.retrieve("xgboost", region, "1.2-1")
 hyperparameters = {
@@ -154,9 +152,9 @@ train_input = sagemaker.inputs.TrainingInput(
     s3_data=f"s3://{bucket}/{training_path}",
     content_type=train_content_type,
 )
-'''
+```
 #### 通过评估器触发训练模型
-'''
+```
 estimator = sagemaker.estimator.Estimator(
     container,
     iam_role,
@@ -165,10 +163,10 @@ estimator = sagemaker.estimator.Estimator(
     instance_type="ml.m5.2xlarge",
 )
 estimator.fit({"train": train_input})
-'''
+```
 
 ### 模型部署
-'''
+```
 from sagemaker.serializers import CSVSerializer
 xgb_predictor = estimator.deploy(
     initial_instance_count = 1, 
@@ -176,16 +174,16 @@ xgb_predictor = estimator.deploy(
     serializer=CSVSerializer())
 response = xgb_predictor.predict(input).decode('utf-8')
 print(response)
-'''
+```
 
 ### 推理
-'''
+```
 import pandas as pd 
 test_data = pd.read_csv('./test.csv')
 test_data=test_data.drop(test_data.columns[0],axis=1)##删除没有列名的数据
-'''
+```
 ### 使用Predicotr推理
-'''
+```
 from sagemaker.predictor import Predictor
 from sagemaker.serializers import CSVSerializer
 endpoint_name = "sagemaker-xgboost-2021-03-17-11-18-11-571" 
@@ -200,10 +198,10 @@ if float(response)>0.652 :
     print("1")
 else :
     print("0")
-'''
+```
 
 ### 推理
-'''
+```
 y_true = []
 y_pred = []
 for i in range(0, len(test_data)):
@@ -216,16 +214,16 @@ for i in range(0, len(test_data)):
         response=0
     y_pred.append(response)test_data.iloc[i]['2'],response)
 
-'''
+```
 
 ### 模型评估
-'''
+```
 import matplotlib
 import matplotlib.pyplot as plt
 from sklearn.metrics import roc_curve, auc, confusion_matrix, f1_score, precision_score, recall_score
 #https://scikit-learn.org/stable/modules/generated/sklearn.metrics.confusion_matrix.html
 print(confusion_matrix(y_true, y_pred))
-'''
+
 
 [[124  34]
  [108 210]]
@@ -233,8 +231,8 @@ TP =124 ，预测正确 存在高低肩问题，而且实际有高低肩问题�
 FN =108 ，预测错误 不存在高低肩问题，而实际是有高低肩问题的数量
 FP = 34 ，预测错误 存在高低肩问题，而实际是不存在高低肩问题的数量
 TN = 201,预测正确 不存在高低肩问题，实际也是不存在高低肩问题的数量
+```
 
-
-### 运行方法
+### 代码运行方法
 1. 进入AWS Sagemaker控制台 开启笔记本实例
 2. 导入 high-low-shoudler-xgboost.ipynb 导入到笔记本实例
