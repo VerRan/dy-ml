@@ -182,7 +182,7 @@ import pandas as pd
 test_data = pd.read_csv('./test.csv')
 test_data=test_data.drop(test_data.columns[0],axis=1)##删除没有列名的数据
 ```
-### 使用Predicotr推理
+### 模型推理
 ```
 from sagemaker.predictor import Predictor
 from sagemaker.serializers import CSVSerializer
@@ -199,8 +199,6 @@ if float(response)>0.652 :
 else :
     print("0")
 ```
-
-### 推理
 ```
 y_true = []
 y_pred = []
