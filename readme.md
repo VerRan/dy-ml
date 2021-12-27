@@ -239,6 +239,7 @@ TN = 201,预测正确 不存在高低肩问题，实际也是不存在高低肩�
 ## 备注
 OpenPose人体关键点识别参数参考：
 通过openpose识别出的参数信息通过数字来表示人体的不同关键点，同时包含了对应的坐标信息。
+```
 // Result for BODY_25 (25 body parts consisting of COCO + foot)
 // const std::map<unsigned int, std::string> POSE_BODY_25_BODY_PARTS {
 //     {0,  "Nose"},
@@ -268,3 +269,4 @@ OpenPose人体关键点识别参数参考：
 //     {24, "RHeel"},
 //     {25, "Background"}
 // };
+```
